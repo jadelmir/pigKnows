@@ -1,65 +1,69 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
+import  UserTable   from "../components/Table";
+import { useEffect, useState } from 'react';
+import { useFetchUsers} from './api/Fetch'
+import Loader from '../components/Loader'
+import Fab from '@material-ui/core/Fab';
+import RefreshIcon from '@material-ui/icons/Refresh';
+import { makeStyles } from '@material-ui/core/styles';
+import Modal from '../components/Modal'
+const useStyles = makeStyles(theme => ({
+  container : {
+    width:'100%'
+  },
+  fabStyle: {
+    display:'flex',
+    flex: 1 ,
+    alignItems:'center',
+    justifyContent:'center',
+    margin:10
+  },
+ 
+  test : {
+    backgroundColor: "green",
 
-export default function Home() {
+  }
+}));
+
+ const Home = () =>{
+
+   let api = 'https://randomuser.me/api/?results=5'
+   const [ refresh , setRefresh] = useState(false)
+   const [isModalOpen , setisModalOpen] = useState(false)
+    const [selectedUser , setSelectedUser]= useState(null)
+   const [users, loading, hasError] = useFetchUsers(api, refresh)
+   const classes = useStyles();
+   const RefreshPage = ()=>{
+     setRefresh(!refresh)
+   }
+   
+   const onRowPress = (id)=>{
+    setisModalOpen(true)
+     setSelectedUser(users.results[id])
+   }
+   const onCloseModal = ()=>{
+     setisModalOpen(false)
+     setSelectedUser(null)
+   }
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+  
+    <div >
+      <div >
+        <div className={classes.fabStyle}>
+          <Fab color="primary" aria-label="refresh" onClick={RefreshPage}>
+            <RefreshIcon />
+          </Fab>
         </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
+        {loading ? <Loader/> : null }
+        {users ? <UserTable data={users} onRowPress={onRowPress} /> : null}
+        <Modal isModalOpen={isModalOpen} closeModal={onCloseModal}  userData={selectedUser} />
+        
+       
+      </div>
+     
     </div>
   )
 }
+export default Home
+
